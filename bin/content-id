@@ -1,0 +1,92 @@
+#!/bin/sh -e
+#L:
+#L:  MIT License
+#L:  
+#l:  Bug reports, feature requests to gemini|https://harkadev.com/oss
+#l:  Copyright (c) 2022 Harkaitz Agirre, harkaitz.aguirre@gmail.com
+#L:
+#L:  Permission is hereby granted, free of charge, to any person obtaining
+#L:  a copy of this software and associated documentation files (the
+#L:  "Software"), to deal in the Software without restriction, including
+#L:  without limitation the rights to use, copy, modify, merge, publish,
+#L:  distribute, sublicense, and/or sell copies of the Software, and to
+#L:  permit persons to whom the Software is furnished to do so, subject to
+#L:  the following conditions:
+#L:
+#L:  The above copyright notice and this permission notice shall be
+#L:  included in all copies or substantial portions of the Software.
+#L:
+#L:  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#L:  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+#L:  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+#L:  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+#L:  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+#L:  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+#L:  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+##:
+#h: Usage: $0 [-fn] FILES... DIRECTORIES...
+#h:
+#h: Get an unique identifier of the file's content. First
+#h: it will try to get it from the name `FILENAME-@ID.FMT`
+#h: then with `md5sum`.
+#h:
+#h: -f  : Print the filename.
+#h: -n  : Only print those calculated with md5sum.
+##:
+content_id() {
+    ## Parse command line arguments.
+    local OPTIND optopt= opt_f= opt_n= arg=
+    while getopts "fn" optopt;do
+        case $optopt in
+            f)  opt_f=y;;
+            n)  opt_n=y;;
+            \?) return 1;;
+        esac
+    done
+    shift $(( $OPTIND - 1 ))
+    ## Operations.
+    content_id_list_files "$@" | while read -r arg; do
+        if test -n "${opt_n}"; then
+            case "${arg}" in *-@*) continue;; esac
+        fi
+        if test @"${opt_f}" = @"y"; then
+            case "${arg}" in
+                *-@*) printf '%s\n' "${arg}" | sed -n 's|\(.*@\)\([^\.]*\)\(.*\)|\2\t\1\2\3|p';;
+                *)    md5sum "${arg}" | sed 's|  |\t|';;
+            esac
+        else
+            case "${arg}" in
+                *-@*) printf '%s\n' "${arg}" | sed -n 's|.*@\([^\.]*\).*|\1|p';;
+                *)    md5sum "${arg}" | sed 's|  *.*$||';;
+            esac
+        fi
+    done
+}
+content_id_list_files() {
+    local arg=
+    if test -n "${CONTENT_ID_FILES}";then
+        printf '%s\n' "${CONTENT_ID_FILES}"
+    else
+        for arg in "$@";do
+            if test -d "${arg}";then
+                find "${arg}" -type f 
+            elif test -f "${arg}";then
+                printf '%s\n' "${arg}"
+            fi
+        done
+    fi
+}
+## -----------------------------------------------------------------------------
+SCRNAME="`basename "$0"`"
+if test @"${SCRNAME}" = @"content-id";then
+    case "${1}" in
+        -h|--help)
+            sed -n 's/^ *#h: \{0,1\}//p' "$0" | sed "s|\\\$0|${SCRNAME}|g"
+            echo ""
+            sed -n 's/^ *#l: \{0,2\}//p' "$0"
+            ;;
+        *)
+            content_id "$@"
+            ;;
+    esac
+fi
