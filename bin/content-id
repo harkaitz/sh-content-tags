@@ -52,12 +52,12 @@ content_id() {
         if test @"${opt_f}" = @"y"; then
             case "${arg}" in
                 *-@*) printf '%s\n' "${arg}" | sed -n 's|\(.*@\)\([^\.]*\)\(.*\)|\2\t\1\2\3|p';;
-                *)    md5sum "${arg}" | sed 's|  |\t|';;
+                *)    md5sum -- "${arg}" | sed 's|  |\t|';;
             esac
         else
             case "${arg}" in
                 *-@*) printf '%s\n' "${arg}" | sed -n 's|.*@\([^\.]*\).*|\1|p';;
-                *)    md5sum "${arg}" | sed 's|  *.*$||';;
+                *)    md5sum -- "${arg}" | sed 's|  *.*$||';;
             esac
         fi
     done

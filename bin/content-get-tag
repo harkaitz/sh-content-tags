@@ -24,7 +24,7 @@
 #L:  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #L:  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ##:
-#h: Usage: $0 [-c][-t TAG] FILES...
+#h: Usage: $0 [-c][-t TAG] FILES... DIRECTORIES... 
 ##:
 . content-id
 content_get_tag() {
@@ -40,15 +40,14 @@ content_get_tag() {
     if test ! -e "${CONTENT_GDBM}"; then
         ft='unknown'
     fi
-    content_id -f "$@" | while read a b; do
-        t="${ft:-`gdbmtool "${CONTENT_GDBM}" fetch "${a}" 2>/dev/null`}"
+    content_id -f "$@" | while read -r a b; do
+        t="${ft:-`gdbmtool "${CONTENT_GDBM}" fetch -- "${a}" 2>/dev/null`}"
         if test ! -n "${tag}"; then
             printf "${fmt}" "${t:-unknown}" "${b}"
         elif test @"${tag}" = @"${t:-unknown}"; then
             printf '%s\n' "${b}"
         fi
     done
-    
 }
 SCRNAME="`basename "$0"`"
 CONTENT_GDBM="${CONTENT_GDBM:-${HOME}/.content.gdbm}"

@@ -24,7 +24,7 @@
 #L:  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #L:  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ##:
-#h: Usage: $0 FILES...
+#h: Usage: $0 FILES... DIRECTORIES...
 #h:
 #h: Move files whose content has been tagged with content-set-tag(1)
 #h: or content-trash(1) as "trash" to ~/.trash. 

@@ -24,12 +24,25 @@
 #L:  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #L:  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ##:
-#h: Usage: $0 FILES...
+#h: Usage: $0 [-f] DIRECTORIES... FILES...
 #h:
 #h: Move files to ~/.trash and tag them as "trash" with content-set-tag(1).
 ##:
 . content-id
 content_trash() {
+    local OPTIND optopt= opt_f= ign=
+    while getopts "f" optopt; do # OPTARG
+        case $optopt in
+            f)  opt_f=y;;
+            \?) return 1;;
+        esac
+    done
+    shift $(( $OPTIND - 1 ))
+    if test ! -n "${opt_f}" && test -n "$1"; then
+        echo "Will trash all in $*"
+        echo "Type enter to continue."
+        read ign
+    fi
     mkdir -p "${HOME}/.trash"
     content_id -f "$@" | while read md5sum file; do
         gdbmtool "${CONTENT_GDBM}" store "${md5sum}" "trash"
